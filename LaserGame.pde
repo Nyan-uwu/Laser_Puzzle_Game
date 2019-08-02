@@ -1,8 +1,8 @@
 void setup() {
-	size(501, 501);
+	size(751, 751);
 	// Init Application
 	Vector window_size = new Vector(width-1, height-1);
-	Vector map_size = new Vector(10, 10);
+	Vector map_size = new Vector(15, 15);
 	Vector maptile_size = new Vector(floor(window_size.x/map_size.x), floor(window_size.y/map_size.y));
 	App.init(window_size, map_size, maptile_size);
 	// Init Classes
@@ -19,55 +19,107 @@ class Map
 
 	MapTile[][] tiles;
 	ArrayList<Vector> beams;
+	ArrayList<Vector> sensors;
+
+	IntDict blocks = null;
 
 	Map(Vector map_size) {
 		this.tiles = new MapTile[map_size.x][map_size.y]; // Create Tiles
 		this.beams = new ArrayList<Vector>();
+		this.sensors = new ArrayList<Vector>();
 
 		this.load_preset("preset__basic_map"); // Load Preset
+
+		for (String b : this.blocks.keyArray()) { println(b, blocks.get(b)); }
+	}
+
+	void create_preset(String name) {
+		String output = "MapTile[] " + name + " = {";
+		for (MapTile[] arr : this.tiles) {
+			for (MapTile mt : arr) {
+				if (mt.type != "null") { switch(mt.type) {
+					case "reflector":
+						output += "new MapTile(new Vector(" + mt.pos.x + "," + mt.pos.y + "), \"" + mt.type + "\", " + mt.rotation + "),";
+						break;
+					case "splitter":
+						output += "new MapTile(new Vector(" + mt.pos.x + "," + mt.pos.y + "), \"" + mt.type + "\", " + mt.rotation + "),";
+						break;
+					case "beam":
+						output += "new MapTile(new Vector(" + mt.pos.x + "," + mt.pos.y + "), \"" + mt.type + "\", new Vector(" + mt.beam_dir.x + "," + mt.beam_dir.y + ")),";
+					default:
+						output += "new MapTile(new Vector(" + mt.pos.x + "," + mt.pos.y + "), \"" + mt.type + "\"),";
+						break;
+				} }
+			}
+		}
+		if (output.charAt(output.length()-1) == ',') {
+			println("Removed ,");
+			output = output.substring(0, output.length()-1);
+		} output += "};";
+		println("Creation Completed.\n" + output);
 	}
 
 	void load_preset(String preset) {
 		if (preset != null) {
 			MapPreset mp = new MapPreset();
 			MapTile[] presetarr = null;
+			IntDict blocks = null;
 			// Load Preset
 			switch(preset) {
 				case "preset__basic_map":
 					presetarr = mp.preset__basic_map;
+					blocks    = mp.preset__basic_map_blocks;
 					break;
 			}
+			this.load_preset(presetarr, blocks);
+		}
+	}
+	void load_preset(MapTile[] mta, IntDict blocksleft) {
 
-			for (Integer i = 0; i < this.tiles.length; i++) { // Populate Map With Tiles
-				for (Integer j = 0; j < this.tiles[i].length; j++) {
-					this.tiles[i][j] = new MapTile(new Vector(i, j), "null");
+		if (blocksleft != null) {
+			this.blocks = blocksleft;
+		} else {
+			this.blocks = new IntDict();
+			this.blocks.set("block", 99);
+			this.blocks.set("reflector", 99);
+			this.blocks.set("splitter", 99);
+		}
+
+		for (Integer i = 0; i < this.tiles.length; i++) { // Populate Map With Tiles
+			for (Integer j = 0; j < this.tiles[i].length; j++) {
+				this.tiles[i][j] = new MapTile(new Vector(i, j), "null");
+			}
+		}
+
+		if (mta != null) {
+			// Import Preset
+			for (MapTile mt : mta) {
+				this.tiles[mt.pos.x][mt.pos.y] = mt;
+				this.tiles[mt.pos.x][mt.pos.y].preset = true;
+			}
+
+			// Find Beams
+			for (MapTile[] arr : this.tiles) {
+				for (MapTile mt : arr) {
+					if (mt.type == "beam") { this.beams.add(new Vector(mt.pos.x, mt.pos.y)); println("Beam Found @ " + mt.pos.x + ":" + mt.pos.y); }
+					if (mt.type == "sensor") { this.sensors.add(new Vector(mt.pos.x, mt.pos.y)); println("Sensor Found @ " + mt.pos.x + ":" + mt.pos.y); }
 				}
 			}
 
-			if (presetarr != null) {
-				// Import Preset
-				for (MapTile mt : presetarr) {
-					this.tiles[mt.pos.x][mt.pos.y] = mt;
-					this.tiles[mt.pos.x][mt.pos.y].preset = true;
-				}
-
-				// Find Beams
-				for (MapTile[] arr : this.tiles) {
-					for (MapTile mt : arr) {
-						if (mt.type == "beam") { this.beams.add(new Vector(mt.pos.x, mt.pos.y)); println("Beam Found @ " + mt.pos.x + ":" + mt.pos.y); }
-					}
-				}
-
-				println("Preset \"" + preset + "\" Has Been Loaded");
-				println("--------------------");
-			} else {
-				println("Preset Does Not Exist.");
-			}
+			println("Preset Has Been Loaded");
+			println("--------------------");
+		} else {
+			println("Preset Does Not Exist.");
 		}
 	}
 
 	void calculate_beams() {
-		for (Vector b : Map.beams) { Map.tiles[b.x][b.y].fire(); }
+		for (Vector s : this.sensors) { this.tiles[s.x][s.y].hit = false; }
+		for (Vector b : this.beams)   { this.tiles[b.x][b.y].fire();      }
+
+		Boolean missed = false;
+		for (Vector s : this.sensors) { if (this.tiles[s.x][s.y].hit == false) { missed = true; } }
+		if (!missed) { println("Level Completed!"); }
 	}
 
 	void render_background() {
@@ -126,6 +178,9 @@ class MapTile
 	// Splitter && Reflector
 	Integer rotation = 0;
 
+	// Sensor
+	Boolean hit = false;
+
 	MapTile(Vector pos, String type) {
 		this.pos  = pos;
 		this.type = type;
@@ -139,6 +194,12 @@ class MapTile
 
 		if (this.type == "beam") { this.beam_body = new ArrayList<Vector>(); this.beam_dir = new Vector(1, 0); }
 	}
+	MapTile(Vector pos, String type, Vector dir) {
+		this.pos  = pos;
+		this.type = type;
+
+		if (this.type == "beam") { this.beam_body = new ArrayList<Vector>(); this.beam_dir = new Vector(dir); }
+	}
 
 	void render() {
 		switch(this.type) {
@@ -150,7 +211,10 @@ class MapTile
 				fill(255); stroke(255); strokeWeight(1);
 				rect(this.pos.x*App.MAPTILE_SIZE.x, this.pos.y*App.MAPTILE_SIZE.y, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
 				break;
-
+			case "sensor":
+				if (this.hit == true) { fill(0, 255, 0); } else { fill(0, 0, 255); }stroke(255); strokeWeight(1);
+				rect(this.pos.x*App.MAPTILE_SIZE.x, this.pos.y*App.MAPTILE_SIZE.y, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
+				break;
 			case "splitter":
 				switch(this.rotation) {
 					case 0:
@@ -222,6 +286,38 @@ class MapTile
 				case "splitter":
 					rect(b.x*App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
 					break;
+				case "reflector":
+					switch(Map.tiles[b.x][b.y].rotation) {
+						case 0:
+							triangle(
+								b.x*App.MAPTILE_SIZE.x+App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y+App.MAPTILE_SIZE.y,
+								b.x*App.MAPTILE_SIZE.x+App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y,
+								b.x*App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y+App.MAPTILE_SIZE.y
+							);
+							break;
+						case 1:
+							triangle(
+								b.x*App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y+App.MAPTILE_SIZE.y,
+								b.x*App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y,
+								b.x*App.MAPTILE_SIZE.x+App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y+App.MAPTILE_SIZE.y
+							);
+							break;
+						case 2:
+							triangle(
+								b.x*App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y,
+								b.x*App.MAPTILE_SIZE.x+App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y,
+								b.x*App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y+App.MAPTILE_SIZE.y
+							);
+							break;
+						case 3:
+							triangle(
+								b.x*App.MAPTILE_SIZE.x+App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y,
+								b.x*App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y,
+								b.x*App.MAPTILE_SIZE.x+App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y+App.MAPTILE_SIZE.y
+							);
+							break;
+					}
+					break;
 			} } }
 		}
 	}
@@ -255,6 +351,7 @@ class MapTile
 								} catch(StackOverflowError e) {
 									Map.tiles[body_pos.x][body_pos.y] = new MapTile(new Vector(body_pos), "null");
 									breakBeam = true;
+									Map.calculate_beams();
 								}
 								break;
 							case 1:
@@ -263,6 +360,7 @@ class MapTile
 								} catch(StackOverflowError e) {
 									Map.tiles[body_pos.x][body_pos.y] = new MapTile(new Vector(body_pos), "null");
 									breakBeam = true;
+									Map.calculate_beams();
 								}
 								break;
 						}
@@ -290,6 +388,10 @@ class MapTile
 								} else { breakBeam = true; }
 								break;
 						}
+						break;
+					case "sensor":
+						Map.tiles[body_pos.x][body_pos.y].hit = true;
+						break;
 				} }
 				if (breakBeam) { break; }
 				else { switch(Map.tiles[body_pos.x][body_pos.y].type) { // Special Block Interactions E.G. Splitters, Reflectors
@@ -308,8 +410,22 @@ class MapTile
 class MapPreset {
 	// Default Presets
 	MapTile[] preset__basic_map = {
-		new MapTile(new Vector(1, 1), "beam"), new MapTile(new Vector(8, 1), "block"), new MapTile(new Vector(5, 1), "reflector", 1)
-	};
+		new MapTile(new Vector(1, 1), "beam"), new MapTile(new Vector(13, 13), "sensor")
+	}; IntDict preset__basic_map_blocks;
 
-	// Custom Presets
+	MapPreset() { // Create Block Dicts
+		preset__basic_map_blocks = new IntDict();
+		preset__basic_map_blocks.set("block", 99); preset__basic_map_blocks.set("reflector", 99); preset__basic_map_blocks.set("splitter", 99); preset__basic_map_blocks.set("beam", 99); preset__basic_map_blocks.set("sensor", 99);
+	}
 }
+
+// Custom Presets - Paset Preset Here and in Map.load_preset(); enter the name of your preset E.G. Map.load_preset(custom_map__test);
+MapTile[] custom_map__test = {new MapTile(new Vector(0,8), "block"),new MapTile(new Vector(0,9), "block"),new MapTile(new Vector(0,10), "block"),new MapTile(new Vector(1,1), "beam", new Vector(1,0)),new MapTile(new Vector(1,1), "beam"),new MapTile(new Vector(1,8), "block"),new MapTile(new Vector(1,9), "block"),new MapTile(new Vector(1,10), "block"),new MapTile(new Vector(2,8), "block"),new MapTile(new Vector(2,9), "block"),new MapTile(new Vector(2,10), "block"),new MapTile(new Vector(3,3), "reflector", 2),new MapTile(new Vector(3,4), "reflector", 1),new MapTile(new Vector(3,8), "reflector", 3),new MapTile(new Vector(3,9), "sensor"),new MapTile(new Vector(3,10), "reflector", 0),new MapTile(new Vector(4,3), "reflector", 3),new MapTile(new Vector(4,4), "reflector", 0),new MapTile(new Vector(6,13), "reflector", 2),new MapTile(new Vector(6,14), "block"),new MapTile(new Vector(7,13), "reflector", 3),new MapTile(new Vector(7,14), "block"),new MapTile(new Vector(8,1), "splitter", 0),new MapTile(new Vector(12,0), "reflector", 1),new MapTile(new Vector(13,0), "block"),new MapTile(new Vector(13,1), "reflector", 1),new MapTile(new Vector(13,9), "reflector", 2),new MapTile(new Vector(13,10), "reflector", 1),new MapTile(new Vector(13,13), "sensor"),new MapTile(new Vector(14,0), "block"),new MapTile(new Vector(14,1), "block"),new MapTile(new Vector(14,2), "reflector", 1),new MapTile(new Vector(14,9), "block"),new MapTile(new Vector(14,10), "block")};
+String[]  custom_map__test_blocks_keys   = {"block","reflector","splitter", "beam", "sensor"};
+int[]     custom_map__test_blocks_values = {0      , 2         , 1        , 0    , 0      };
+IntDict   custom_map__test_blocks = new IntDict(custom_map__test_blocks_keys, custom_map__test_blocks_values);
+//// Example ^^^ Example //// Copy Paste and edit values ////
+MapTile[] custom_spiral = {new MapTile(new Vector(1,1), "beam", new Vector(1,0)),new MapTile(new Vector(1,1), "beam"),new MapTile(new Vector(4,6), "block"),new MapTile(new Vector(4,7), "block"),new MapTile(new Vector(4,8), "block"),new MapTile(new Vector(4,9), "block"),new MapTile(new Vector(4,10), "block"),new MapTile(new Vector(4,11), "block"),new MapTile(new Vector(4,12), "block"),new MapTile(new Vector(4,13), "block"),new MapTile(new Vector(4,14), "block"),new MapTile(new Vector(5,6), "block"),new MapTile(new Vector(5,7), "reflector", 0),new MapTile(new Vector(5,14), "reflector", 3),new MapTile(new Vector(6,6), "block"),new MapTile(new Vector(6,8), "reflector", 0),new MapTile(new Vector(6,13), "reflector", 3),new MapTile(new Vector(7,6), "block"),new MapTile(new Vector(7,9), "reflector", 0),new MapTile(new Vector(7,12), "reflector", 3),new MapTile(new Vector(8,6), "block"),new MapTile(new Vector(8,10), "reflector", 0),new MapTile(new Vector(8,11), "reflector", 3),new MapTile(new Vector(9,0), "block"),new MapTile(new Vector(9,1), "reflector", 1),new MapTile(new Vector(10,0), "block"),new MapTile(new Vector(10,1), "block"),new MapTile(new Vector(10,6), "block"),new MapTile(new Vector(10,10), "reflector", 1),new MapTile(new Vector(10,12), "reflector", 2),new MapTile(new Vector(11,6), "block"),new MapTile(new Vector(11,9), "reflector", 1),new MapTile(new Vector(11,13), "reflector", 2),new MapTile(new Vector(12,6), "block"),new MapTile(new Vector(12,8), "reflector", 1),new MapTile(new Vector(12,14), "reflector", 2),new MapTile(new Vector(13,6), "block"),new MapTile(new Vector(13,7), "reflector", 1),new MapTile(new Vector(13,13), "sensor"),new MapTile(new Vector(13,14), "block"),new MapTile(new Vector(14,6), "block"),new MapTile(new Vector(14,7), "block"),new MapTile(new Vector(14,8), "block"),new MapTile(new Vector(14,9), "block"),new MapTile(new Vector(14,10), "block"),new MapTile(new Vector(14,11), "block"),new MapTile(new Vector(14,12), "block"),new MapTile(new Vector(14,13), "block"),new MapTile(new Vector(14,14), "block")};
+String[]  custom_spiral_blocks_keys   = {"block","reflector","splitter", "beam", "sensor"};
+int[]     custom_spiral_blocks_values = {0      , 1         , 0        , 0     , 0       };
+IntDict   custom_spiral_blocks = new IntDict(custom_spiral_blocks_keys, custom_spiral_blocks_values);

@@ -4,7 +4,7 @@ static class App {
 	static Vector MAP_SIZE;
 
 	static Vector MAPTILE_SIZE;
-	static String MAPTILE_SELECTED_TYPE = "splitter";
+	static String MAPTILE_SELECTED_TYPE = "block";
 
 	static Boolean DRAGGING = false;
 	static MapTile DRAGGING_MAPTILE;

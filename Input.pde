@@ -34,6 +34,10 @@ void keyPressed() {
 			}
 			break;
 
+		case "p":
+			Map.create_preset("custom_map__MYMAP_" + str(second()) + str(minute()) + str(hour()));
+			break;
+
 		// Switch Block
 		case "1":
 			App.MAPTILE_SELECTED_TYPE = "block";
@@ -43,6 +47,12 @@ void keyPressed() {
 			break;
 		case "3":
 			App.MAPTILE_SELECTED_TYPE = "splitter";
+			break;
+		case "9":
+			App.MAPTILE_SELECTED_TYPE = "beam";
+			break;
+		case "0":
+			App.MAPTILE_SELECTED_TYPE = "sensor";
 			break;
 	}
 
@@ -58,9 +68,35 @@ void mousePressed() {
 	switch(mouseButton) {
 		case LEFT:
 			if (Map.tiles[mpos.x][mpos.y].type == "null") {
-				Map.tiles[mpos.x][mpos.y] = new MapTile(new Vector(mpos.x, mpos.y), App.MAPTILE_SELECTED_TYPE);
+				if (Map.blocks.get(App.MAPTILE_SELECTED_TYPE) > 0) { switch(App.MAPTILE_SELECTED_TYPE) {
+					case "beam":
+						Map.tiles[mpos.x][mpos.y] = new MapTile(new Vector(mpos.x, mpos.y), App.MAPTILE_SELECTED_TYPE);
+						Map.blocks.sub(App.MAPTILE_SELECTED_TYPE, 1);
+						Map.beams.add(new Vector(mpos.x, mpos.y));
+						println(App.MAPTILE_SELECTED_TYPE + ": " + Map.blocks.get(App.MAPTILE_SELECTED_TYPE));
+						break;
+					case "sensor":
+						Map.tiles[mpos.x][mpos.y] = new MapTile(new Vector(mpos.x, mpos.y), App.MAPTILE_SELECTED_TYPE);
+						Map.blocks.sub(App.MAPTILE_SELECTED_TYPE, 1);
+						Map.sensors.add(new Vector(mpos.x, mpos.y));
+						println(App.MAPTILE_SELECTED_TYPE + ": " + Map.blocks.get(App.MAPTILE_SELECTED_TYPE));
+						break;
+					default:
+						Map.tiles[mpos.x][mpos.y] = new MapTile(new Vector(mpos.x, mpos.y), App.MAPTILE_SELECTED_TYPE);
+						Map.blocks.sub(App.MAPTILE_SELECTED_TYPE, 1);
+						println(App.MAPTILE_SELECTED_TYPE + ": " + Map.blocks.get(App.MAPTILE_SELECTED_TYPE));
+						break;
+				} }
 			}
 			else if (Map.tiles[mpos.x][mpos.y].type != "null" && Map.tiles[mpos.x][mpos.y].preset != true) { // Start Dragging Tile
+				if (Map.tiles[mpos.x][mpos.y].type == "beam") { for (Integer i = Map.beams.size()-1; i >= 0; i-- ) {
+					Vector v = Map.beams.get(i);
+					if (v.x == mpos.x && v.y == mpos.y) { Map.beams.remove(v); /*println("REMOVE BEAM");*/ }
+				} }
+				else if (Map.tiles[mpos.x][mpos.y].type == "sensor") { for (Integer i = Map.sensors.size()-1; i >= 0; i-- ) {
+					Vector v = Map.sensors.get(i);
+					if (v.x == mpos.x && v.y == mpos.y) { Map.sensors.remove(v); /*println("REMOVE SENSOR");*/ }
+				} }
 				App.DRAGGING = true;
 				App.DRAGGING_MAPTILE = Map.tiles[mpos.x][mpos.y];
 				App.DRAGGING_PREVPOS = mpos;
@@ -68,9 +104,31 @@ void mousePressed() {
 			}
 			break;
 		case RIGHT:
-			if (Map.tiles[mpos.x][mpos.y].type != "null" && Map.tiles[mpos.x][mpos.y].preset != true) {
-				Map.tiles[mpos.x][mpos.y] = new MapTile(new Vector(mpos.x, mpos.y), "null");
-			}
+			if (Map.tiles[mpos.x][mpos.y].type != "null" && Map.tiles[mpos.x][mpos.y].preset != true) { switch(Map.tiles[mpos.x][mpos.y].type) {
+				case "beam":
+					Map.blocks.add(Map.tiles[mpos.x][mpos.y].type, 1);
+					println(Map.tiles[mpos.x][mpos.y].type + ": " + Map.blocks.get(Map.tiles[mpos.x][mpos.y].type));
+					Map.tiles[mpos.x][mpos.y] = new MapTile(new Vector(mpos.x, mpos.y), "null");
+					for (Integer i = Map.beams.size()-1; i >= 0; i-- ) {
+						Vector v = Map.beams.get(i);
+						if (v.x == mpos.x && v.y == mpos.y) { Map.beams.remove(v); /*println("REMOVE BEAM");*/ }
+					} // println(Map.beams.size());
+					break;
+				case "sensor":
+					Map.blocks.add(Map.tiles[mpos.x][mpos.y].type, 1);
+					println(Map.tiles[mpos.x][mpos.y].type + ": " + Map.blocks.get(Map.tiles[mpos.x][mpos.y].type));
+					Map.tiles[mpos.x][mpos.y] = new MapTile(new Vector(mpos.x, mpos.y), "null");
+					for (Integer i = Map.sensors.size()-1; i >= 0; i-- ) {
+						Vector v = Map.sensors.get(i);
+						if (v.x == mpos.x && v.y == mpos.y) { Map.sensors.remove(v); /*println("REMOVE SENSOR");*/ }
+					} // println(Map.sensors.size());
+					break;
+				default:
+					Map.blocks.add(Map.tiles[mpos.x][mpos.y].type, 1);
+					println(Map.tiles[mpos.x][mpos.y].type + ": " + Map.blocks.get(Map.tiles[mpos.x][mpos.y].type));
+					Map.tiles[mpos.x][mpos.y] = new MapTile(new Vector(mpos.x, mpos.y), "null");
+					break;
+			} }
 			break;
 	}
 
@@ -83,10 +141,22 @@ void mouseReleased() {
 	Integer[] arrpos = Mousef.posToArrPos(mouseX, mouseY);
 	Vector mpos = new Vector(arrpos[0], arrpos[1]);
 	if (App.DRAGGING == true) {
-		if (Map.tiles[mpos.x][mpos.y].type == "null") {
-			Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
-			Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
-		} else {
+		if (Map.tiles[mpos.x][mpos.y].type == "null") { switch(App.DRAGGING_MAPTILE.type) {
+			case "beam":
+				Map.beams.add(new Vector(mpos));
+				Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
+				Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
+				break;
+			case "sensor":
+				Map.sensors.add(new Vector(mpos));
+				Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
+				Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
+				break;
+			default:
+				Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
+				Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
+				break;
+		} } else {
 			Map.tiles[App.DRAGGING_PREVPOS.x][App.DRAGGING_PREVPOS.y] = App.DRAGGING_MAPTILE;
 		}
 		App.DRAGGING = false;
