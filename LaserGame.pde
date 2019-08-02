@@ -12,15 +12,7 @@ void setup() {
 	// Initial Calculation
 	Map.calculate_beams();
 }
-
-void draw() {
-	background(0);
-	// Math && Logic
-
-
-	// Run Final Frame Render
-	Renderer.render_all();
-}
+void draw() { background(0); Renderer.render_all(); } /* Run Final Frame Render */
 
 class Map
 {
@@ -88,6 +80,9 @@ class Map
 	}
 
 	void render_tiles() {
+		for (Vector b : this.beams) {
+			this.tiles[b.x][b.y].render_beam();
+		}
 		for (MapTile[] arr : this.tiles) {
 			for (MapTile mt : arr) {
 				mt.render();
@@ -150,17 +145,6 @@ class MapTile
 			case "null":
 				break;
 			case "beam":
-				fill(255, 25, 25); stroke(255); strokeWeight(1);
-				rect(this.pos.x*App.MAPTILE_SIZE.x, this.pos.y*App.MAPTILE_SIZE.y, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
-				fill(255, 25, 25, 200); stroke(255); strokeWeight(1);
-				if (this.beam_body != null) { for (Vector b : this.beam_body) { switch(Map.tiles[b.x][b.y].type) { // Special Block Interactions E.G. Splitters, Reflectors
-					case "null":
-						rect(b.x*App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
-						break;
-					case "splitter":
-						rect(b.x*App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
-						break;
-				} } }
 				break;
 			case "block":
 				fill(255); stroke(255); strokeWeight(1);
@@ -223,6 +207,22 @@ class MapTile
 						);
 						break;
 				}
+		}
+	}
+
+	void render_beam() {
+		if (this.type == "beam") {
+			fill(255, 25, 25); stroke(255); strokeWeight(1);
+			rect(this.pos.x*App.MAPTILE_SIZE.x, this.pos.y*App.MAPTILE_SIZE.y, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
+			fill(255, 25, 25, 200); stroke(255); strokeWeight(1);
+			if (this.beam_body != null) { for (Vector b : this.beam_body) { switch(Map.tiles[b.x][b.y].type) { // Special Block Interactions E.G. Splitters, Reflectors
+				case "null":
+					rect(b.x*App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
+					break;
+				case "splitter":
+					rect(b.x*App.MAPTILE_SIZE.x, b.y*App.MAPTILE_SIZE.y, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
+					break;
+			} } }
 		}
 	}
 
