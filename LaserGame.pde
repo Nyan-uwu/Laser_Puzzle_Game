@@ -419,6 +419,9 @@ class MapPreset {
 	}
 }
 
+// Base Levels
+
+
 // Custom Presets - Paset Preset Here and in Map.load_preset(); enter the name of your preset E.G. Map.load_preset(custom_map__test);
 MapTile[] custom_map__test = {new MapTile(new Vector(0,8), "block"),new MapTile(new Vector(0,9), "block"),new MapTile(new Vector(0,10), "block"),new MapTile(new Vector(1,1), "beam", new Vector(1,0)),new MapTile(new Vector(1,1), "beam"),new MapTile(new Vector(1,8), "block"),new MapTile(new Vector(1,9), "block"),new MapTile(new Vector(1,10), "block"),new MapTile(new Vector(2,8), "block"),new MapTile(new Vector(2,9), "block"),new MapTile(new Vector(2,10), "block"),new MapTile(new Vector(3,3), "reflector", 2),new MapTile(new Vector(3,4), "reflector", 1),new MapTile(new Vector(3,8), "reflector", 3),new MapTile(new Vector(3,9), "sensor"),new MapTile(new Vector(3,10), "reflector", 0),new MapTile(new Vector(4,3), "reflector", 3),new MapTile(new Vector(4,4), "reflector", 0),new MapTile(new Vector(6,13), "reflector", 2),new MapTile(new Vector(6,14), "block"),new MapTile(new Vector(7,13), "reflector", 3),new MapTile(new Vector(7,14), "block"),new MapTile(new Vector(8,1), "splitter", 0),new MapTile(new Vector(12,0), "reflector", 1),new MapTile(new Vector(13,0), "block"),new MapTile(new Vector(13,1), "reflector", 1),new MapTile(new Vector(13,9), "reflector", 2),new MapTile(new Vector(13,10), "reflector", 1),new MapTile(new Vector(13,13), "sensor"),new MapTile(new Vector(14,0), "block"),new MapTile(new Vector(14,1), "block"),new MapTile(new Vector(14,2), "reflector", 1),new MapTile(new Vector(14,9), "block"),new MapTile(new Vector(14,10), "block")};
 String[]  custom_map__test_blocks_keys   = {"block","reflector","splitter", "beam", "sensor"};
