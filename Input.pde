@@ -15,6 +15,11 @@ void keyPressed() {
 						if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
 						else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
 						break;
+					case "beam":
+						if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y == -1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector(-1,  0); }
+						else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0, -1); }
+						else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 1,  0); }
+						else if (Map.tiles[mpos.x][mpos.y].beam_dir.x == -1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0,  1); }
 				}
 			}
 			break;
@@ -30,6 +35,11 @@ void keyPressed() {
 						if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
 						else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
 						break;
+					case "beam":
+						if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y == -1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 1,  0); }
+						else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0,  1); }
+						else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector(-1,  0); }
+						else if (Map.tiles[mpos.x][mpos.y].beam_dir.x == -1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0, -1); }
 				}
 			}
 			break;
