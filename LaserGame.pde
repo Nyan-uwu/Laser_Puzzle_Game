@@ -329,9 +329,10 @@ class MapTile
 			//Set Vars For Beam Body
 			Vector body_pos = new Vector(newpos);
 			Vector body_dir = new Vector(newdir);
+      Integer tempTimes = 0;
 
-			while(true) {
-				body_pos.add(body_dir);
+			while(true && tempTimes < App.BEAM_LENGTH_MAX) {
+				body_pos.add(body_dir); tempTimes++;
 				// Handle Out Of Bounds
 				if (body_pos.x < 0 || body_pos.x >= Map.tiles.length)    { /*println("Beam Broken.");*/ break; }
 				if (body_pos.y < 0 || body_pos.y >= Map.tiles[0].length) { /*println("Beam Broken.");*/ break; }

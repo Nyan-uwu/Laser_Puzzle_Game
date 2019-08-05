@@ -10,6 +10,8 @@ static class App {
 	static MapTile DRAGGING_MAPTILE;
 	static Vector  DRAGGING_PREVPOS;
 
+  static Integer BEAM_LENGTH_MAX = 256; 
+
 	static void init(
 		Vector wsize, Vector msize, Vector mtsize
 	) {
