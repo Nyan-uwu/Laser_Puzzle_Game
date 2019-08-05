@@ -4,44 +4,10 @@ void keyPressed() {
 	Vector mpos = new Vector(arrpos[0], arrpos[1]);
 	switch(str(key).toLowerCase()) {
 		case "q":
-			if (Map.tiles[mpos.x][mpos.y].preset == false) {
-				switch(Map.tiles[mpos.x][mpos.y].type) {
-					case "splitter":
-						if (Map.tiles[mpos.x][mpos.y].rotation == 0) Map.tiles[mpos.x][mpos.y].rotation = 1;
-						else if (Map.tiles[mpos.x][mpos.y].rotation == 1) Map.tiles[mpos.x][mpos.y].rotation = 0;
-						break;
-					case "reflector":
-						Map.tiles[mpos.x][mpos.y].rotation -= 1;
-						if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
-						else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
-						break;
-					case "beam":
-						if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y == -1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector(-1,  0); }
-						else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0, -1); }
-						else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 1,  0); }
-						else if (Map.tiles[mpos.x][mpos.y].beam_dir.x == -1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0,  1); }
-				}
-			}
+			maptile_rotate(mpos, -1);
 			break;
 		case "e":
-			if (Map.tiles[mpos.x][mpos.y].preset == false) {
-				switch(Map.tiles[mpos.x][mpos.y].type) {
-					case "splitter":
-						if (Map.tiles[mpos.x][mpos.y].rotation == 0) Map.tiles[mpos.x][mpos.y].rotation = 1;
-						else if (Map.tiles[mpos.x][mpos.y].rotation == 1) Map.tiles[mpos.x][mpos.y].rotation = 0;
-						break;
-					case "reflector":
-						Map.tiles[mpos.x][mpos.y].rotation += 1;
-						if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
-						else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
-						break;
-					case "beam":
-						if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y == -1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 1,  0); }
-						else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0,  1); }
-						else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector(-1,  0); }
-						else if (Map.tiles[mpos.x][mpos.y].beam_dir.x == -1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0, -1); }
-				}
-			}
+			maptile_rotate(mpos,  1);
 			break;
 
 		case "p":
@@ -75,7 +41,7 @@ void mousePressed() {
 	Integer[] arrpos = Mousef.posToArrPos(mouseX, mouseY);
 	Vector mpos = new Vector(arrpos[0], arrpos[1]);
 
-	switch(mouseButton) {
+	if(mpos.x >= 0 && mpos.x < App.MAP_SIZE.x && mpos.y >= 0 && mpos.y < App.MAP_SIZE.y) { switch(mouseButton) {
 		case LEFT:
 			if (Map.tiles[mpos.x][mpos.y].type == "null") {
 				if (Map.blocks.get(App.MAPTILE_SELECTED_TYPE) > 0) { switch(App.MAPTILE_SELECTED_TYPE) {
@@ -140,7 +106,17 @@ void mousePressed() {
 					break;
 			} }
 			break;
-	}
+	} } else if (mouseX >= App.TILETRAY_OFFSET-App.MAPTILE_SIZE.x && mouseX < width) { switch(mouseButton) {
+		case LEFT:
+			try {
+				Integer relpos = ((mouseY+App.TILETRAY_BLOCK_DISTANCE)/App.TILETRAY_BLOCK_DISTANCE)-1;
+				String type = App.MAPTILE_AVALIABLE_TYPES[relpos];
+				println("type: "+type);
+			} catch (ArrayIndexOutOfBoundsException e) {
+
+			}
+			break;
+	} }
 
 	// Calculate Beams
 	Map.calculate_beams();
@@ -151,23 +127,39 @@ void mouseReleased() {
 	Integer[] arrpos = Mousef.posToArrPos(mouseX, mouseY);
 	Vector mpos = new Vector(arrpos[0], arrpos[1]);
 	if (App.DRAGGING == true) {
-		if (Map.tiles[mpos.x][mpos.y].type == "null") { switch(App.DRAGGING_MAPTILE.type) {
-			case "beam":
-				Map.beams.add(new Vector(mpos));
-				Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
-				Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
-				break;
-			case "sensor":
-				Map.sensors.add(new Vector(mpos));
-				Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
-				Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
-				break;
-			default:
-				Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
-				Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
-				break;
-		} } else {
-			Map.tiles[App.DRAGGING_PREVPOS.x][App.DRAGGING_PREVPOS.y] = App.DRAGGING_MAPTILE;
+		try {
+			if (Map.tiles[mpos.x][mpos.y].type == "null") { switch(App.DRAGGING_MAPTILE.type) {
+				case "beam":
+					Map.beams.add(new Vector(mpos));
+					Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
+					Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
+					break;
+				case "sensor":
+					Map.sensors.add(new Vector(mpos));
+					Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
+					Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
+					break;
+				default:
+					Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
+					Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
+					break;
+			} if (mpos.x == App.DRAGGING_PREVPOS.x && mpos.y == App.DRAGGING_PREVPOS.y) { maptile_rotate(mpos, 1); }
+			} else {
+				Map.tiles[App.DRAGGING_PREVPOS.x][App.DRAGGING_PREVPOS.y] = App.DRAGGING_MAPTILE;
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			// Map.tiles[App.DRAGGING_PREVPOS.x][App.DRAGGING_PREVPOS.y] = App.DRAGGING_MAPTILE;
+			// switch(App.DRAGGING_MAPTILE.type) {
+			// 	case "beam":
+			// 		Map.beams.add(new Vector(App.DRAGGING_PREVPOS));
+			// 		break;
+			// 	case "sensor":
+			// 		Map.sensors.add(new Vector(App.DRAGGING_PREVPOS));
+			// 		break;
+			// }
+			Map.blocks.add(App.DRAGGING_MAPTILE.type, 1);
+			println(App.DRAGGING_MAPTILE.type + ": " + Map.blocks.get(App.DRAGGING_MAPTILE.type));
+			Map.tiles[App.DRAGGING_PREVPOS.x][App.DRAGGING_PREVPOS.y] = new MapTile(new Vector(App.DRAGGING_PREVPOS.x, App.DRAGGING_PREVPOS.y), "null");
 		}
 		App.DRAGGING = false;
 		App.DRAGGING_MAPTILE = null;
@@ -175,6 +167,53 @@ void mouseReleased() {
 
 		// Recalculate calculate_beamsAfter Dragging
 		Map.calculate_beams();
+	}
+}
+
+void maptile_rotate(Vector mpos, Integer dir) {
+	if (dir == 1 || dir == -1) {
+		switch(dir) {
+			case -1:
+				if (Map.tiles[mpos.x][mpos.y].preset == false) {
+					switch(Map.tiles[mpos.x][mpos.y].type) {
+						case "splitter":
+							if (Map.tiles[mpos.x][mpos.y].rotation == 0) Map.tiles[mpos.x][mpos.y].rotation = 1;
+							else if (Map.tiles[mpos.x][mpos.y].rotation == 1) Map.tiles[mpos.x][mpos.y].rotation = 0;
+							break;
+						case "reflector":
+							Map.tiles[mpos.x][mpos.y].rotation -= 1;
+							if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
+							else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
+							break;
+						case "beam":
+							if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y == -1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector(-1,  0); }
+							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0, -1); }
+							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 1,  0); }
+							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x == -1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0,  1); }
+					}
+				}
+				break;
+			case 1:
+				if (Map.tiles[mpos.x][mpos.y].preset == false) {
+					switch(Map.tiles[mpos.x][mpos.y].type) {
+						case "splitter":
+							if (Map.tiles[mpos.x][mpos.y].rotation == 0) Map.tiles[mpos.x][mpos.y].rotation = 1;
+							else if (Map.tiles[mpos.x][mpos.y].rotation == 1) Map.tiles[mpos.x][mpos.y].rotation = 0;
+							break;
+						case "reflector":
+							Map.tiles[mpos.x][mpos.y].rotation += 1;
+							if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
+							else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
+							break;
+						case "beam":
+							if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y == -1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 1,  0); }
+							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0,  1); }
+							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector(-1,  0); }
+							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x == -1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0, -1); }
+					}
+				}
+				break;
+		}
 	}
 }
 

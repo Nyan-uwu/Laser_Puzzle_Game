@@ -1,10 +1,11 @@
 void setup() {
-	size(751, 751);
+	size(751, 651);
 	// Init Application
-	Vector window_size = new Vector(width-1, height-1);
-	Vector map_size = new Vector(15, 15);
+	Vector app_size     = new Vector(width, height);
+	Vector window_size  = new Vector(width-151, height-1);
+	Vector map_size     = new Vector(15, 15);
 	Vector maptile_size = new Vector(floor(window_size.x/map_size.x), floor(window_size.y/map_size.y));
-	App.init(window_size, map_size, maptile_size);
+	App.init(app_size, window_size, map_size, maptile_size);
 	// Init Classes
 	Renderer = new Renderer();
 	Map      = new Map(map_size);
@@ -159,6 +160,49 @@ class Map
 
 		line(mpos.x*App.MAPTILE_SIZE.x, mpos.y*App.MAPTILE_SIZE.y+App.MAPTILE_SIZE.y, mpos.x*App.MAPTILE_SIZE.x+App.MAPTILE_SIZE.x/3, mpos.y*App.MAPTILE_SIZE.y+App.MAPTILE_SIZE.y);
 		line(mpos.x*App.MAPTILE_SIZE.x, mpos.y*App.MAPTILE_SIZE.y+App.MAPTILE_SIZE.y, mpos.x*App.MAPTILE_SIZE.x, mpos.y*App.MAPTILE_SIZE.y+App.MAPTILE_SIZE.y-App.MAPTILE_SIZE.y/3);
+	}
+
+	void render_tiletray() {
+		// println("App.TILETRAY_OFFSET: "+App.TILETRAY_OFFSET);
+		Integer offset = App.TILETRAY_OFFSET;
+		Integer j = App.MAPTILE_SIZE.y;
+		for (String type :  App.MAPTILE_AVALIABLE_TYPES) {
+			fill(255); stroke(255); strokeWeight(1); textSize(16); textAlign(CENTER);
+			text(type, offset, j-10);
+			switch(type) {
+				case "block":
+					fill(255); stroke(255); strokeWeight(1);
+					rect(offset-(App.MAPTILE_SIZE.x/2), j, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
+					break;
+				case "reflector":
+					fill(255); stroke(255); strokeWeight(1);
+					triangle(
+						offset-(App.MAPTILE_SIZE.x/2), j,
+						offset-(App.MAPTILE_SIZE.x/2)+App.MAPTILE_SIZE.x, j,
+						offset-(App.MAPTILE_SIZE.x/2), j+App.MAPTILE_SIZE.y
+					);
+					break;
+				case "splitter":
+					fill(255); stroke(255); strokeWeight(3);
+					line(offset-(App.MAPTILE_SIZE.x/2), j, offset-(App.MAPTILE_SIZE.x/2)+App.MAPTILE_SIZE.x/3, j);
+					line(offset-(App.MAPTILE_SIZE.x/2), j, offset-(App.MAPTILE_SIZE.x/2), j+App.MAPTILE_SIZE.y/3);
+
+					line(offset-(App.MAPTILE_SIZE.x/2)+App.MAPTILE_SIZE.x, j+App.MAPTILE_SIZE.y, offset-(App.MAPTILE_SIZE.x/2)+App.MAPTILE_SIZE.x-App.MAPTILE_SIZE.x/3, j+App.MAPTILE_SIZE.y);
+					line(offset-(App.MAPTILE_SIZE.x/2)+App.MAPTILE_SIZE.x, j+App.MAPTILE_SIZE.y, offset-(App.MAPTILE_SIZE.x/2)+App.MAPTILE_SIZE.x, j+App.MAPTILE_SIZE.y-App.MAPTILE_SIZE.y/3);
+
+					line(offset-(App.MAPTILE_SIZE.x/2), j, offset-(App.MAPTILE_SIZE.x/2)+App.MAPTILE_SIZE.x, j+App.MAPTILE_SIZE.y);
+					break;
+				case "beam":
+					fill(255, 25, 25); stroke(255); strokeWeight(1);
+					rect(offset-(App.MAPTILE_SIZE.x/2), j, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
+					break;
+				case "sensor":
+					fill(25, 25, 255); stroke(255); strokeWeight(1);
+					rect(offset-(App.MAPTILE_SIZE.x/2), j, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
+					break;
+			}
+			j += App.TILETRAY_BLOCK_DISTANCE;
+		}
 	}
 
 } Map Map;

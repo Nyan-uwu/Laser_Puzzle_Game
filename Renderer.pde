@@ -6,6 +6,7 @@ class Renderer {
 		Map.render_background(); // Draw Grid
 		// Draw Beam
 		Map.render_tiles(); // Draw Tiles
+		Map.render_tiletray(); // Draw Tray
 		if (App.DRAGGING == true) { Map.render_dragtile(); }
 	}
 } Renderer Renderer;
