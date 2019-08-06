@@ -10,12 +10,13 @@ static class App {
 	static String[]  MAPTILE_AVALIABLE_TYPES = {"block", "reflector", "splitter", "beam", "sensor"};
 	static Integer[] MAPTILE_RELATED_BUTTON  = {1      , 2          , 3         , 9     , 0       };
 
-	static Integer             TILETRAY_OFFSET;
-	static Integer             TILETRAY_BLOCK_DISTANCE;
+	static Integer TILETRAY_OFFSET;
+	static Integer TILETRAY_BLOCK_DISTANCE;
 
 	static Boolean DRAGGING = false;
 	static MapTile DRAGGING_MAPTILE;
 	static Vector  DRAGGING_PREVPOS;
+	static Boolean DRAGGING_FROMTRAY = false;
 
   	static Integer BEAM_LENGTH_MAX = 256; 
 

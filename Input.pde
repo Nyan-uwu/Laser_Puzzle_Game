@@ -111,10 +111,13 @@ void mousePressed() {
 			try {
 				Integer relpos = ((mouseY+App.TILETRAY_BLOCK_DISTANCE)/App.TILETRAY_BLOCK_DISTANCE)-1;
 				String type = App.MAPTILE_AVALIABLE_TYPES[relpos];
+				App.MAPTILE_SELECTED_TYPE = type;
+				App.DRAGGING              = true;
+				App.DRAGGING_FROMTRAY     = true;
+				App.DRAGGING_MAPTILE      = new MapTile(new Vector(-1, -1), type);
+				App.DRAGGING_PREVPOS      = null;
 				println("type: "+type);
-			} catch (ArrayIndexOutOfBoundsException e) {
-
-			}
+			} catch (ArrayIndexOutOfBoundsException e) { println("Invalid TrayTile"); }
 			break;
 	} }
 
@@ -128,7 +131,25 @@ void mouseReleased() {
 	Vector mpos = new Vector(arrpos[0], arrpos[1]);
 	if (App.DRAGGING == true) {
 		try {
-			if (Map.tiles[mpos.x][mpos.y].type == "null") { switch(App.DRAGGING_MAPTILE.type) {
+			if (App.DRAGGING_FROMTRAY) {
+				if (Map.tiles[mpos.x][mpos.y].type == "null") { switch(App.DRAGGING_MAPTILE.type) {
+					case "beam":
+						Map.beams.add(new Vector(mpos));
+						Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
+						Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
+						break;
+					case "sensor":
+						Map.sensors.add(new Vector(mpos));
+						Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
+						Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
+						break;
+					default:
+						Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
+						Map.tiles[mpos.x][mpos.y].pos = new Vector(mpos.x, mpos.y);
+						break;
+				} Map.blocks.sub(App.MAPTILE_SELECTED_TYPE, 1); }
+			}
+			else if (Map.tiles[mpos.x][mpos.y].type == "null") { switch(App.DRAGGING_MAPTILE.type) {
 				case "beam":
 					Map.beams.add(new Vector(mpos));
 					Map.tiles[mpos.x][mpos.y] = App.DRAGGING_MAPTILE;
@@ -157,11 +178,16 @@ void mouseReleased() {
 			// 		Map.sensors.add(new Vector(App.DRAGGING_PREVPOS));
 			// 		break;
 			// }
-			Map.blocks.add(App.DRAGGING_MAPTILE.type, 1);
-			println(App.DRAGGING_MAPTILE.type + ": " + Map.blocks.get(App.DRAGGING_MAPTILE.type));
-			Map.tiles[App.DRAGGING_PREVPOS.x][App.DRAGGING_PREVPOS.y] = new MapTile(new Vector(App.DRAGGING_PREVPOS.x, App.DRAGGING_PREVPOS.y), "null");
+			if (App.DRAGGING_FROMTRAY != true) {
+				Map.blocks.add(App.DRAGGING_MAPTILE.type, 1);
+				println(App.DRAGGING_MAPTILE.type + ": " + Map.blocks.get(App.DRAGGING_MAPTILE.type));
+				Map.tiles[App.DRAGGING_PREVPOS.x][App.DRAGGING_PREVPOS.y] = new MapTile(new Vector(App.DRAGGING_PREVPOS.x, App.DRAGGING_PREVPOS.y), "null");
+			} else {
+
+			}
 		}
 		App.DRAGGING = false;
+		App.DRAGGING_FROMTRAY = false;
 		App.DRAGGING_MAPTILE = null;
 		App.DRAGGING_PREVPOS = null;
 
