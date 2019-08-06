@@ -7,8 +7,8 @@ static class App {
 
 	static Vector    MAPTILE_SIZE;
 	static String    MAPTILE_SELECTED_TYPE   = "block";
-	static String[]  MAPTILE_AVALIABLE_TYPES = {"block", "reflector", "splitter", "beam", "sensor"};
-	static Integer[] MAPTILE_RELATED_BUTTON  = {1      , 2          , 3         , 9     , 0       };
+	static String[]  MAPTILE_AVALIABLE_TYPES = {"block", "reflector", "splitter", "and", "beam", "sensor"};
+	static Integer[] MAPTILE_RELATED_BUTTON  = {1      , 2          , 3         , 4           , 9     , 0       };
 
 	static Integer TILETRAY_OFFSET;
 	static Integer TILETRAY_BLOCK_DISTANCE;
@@ -18,7 +18,9 @@ static class App {
 	static Vector  DRAGGING_PREVPOS;
 	static Boolean DRAGGING_FROMTRAY = false;
 
-  	static Integer BEAM_LENGTH_MAX = 256; 
+	static Boolean LEVEL_DISPLAY_BUTTON = false;
+
+  	static Integer BEAM_LENGTH_MAX = 256;
 
 	static void init(
 		Vector asize, Vector wsize, Vector msize, Vector mtsize

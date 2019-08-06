@@ -108,18 +108,27 @@ void mousePressed() {
 			break;
 	} } else if (mouseX >= App.TILETRAY_OFFSET-App.MAPTILE_SIZE.x && mouseX < width) { switch(mouseButton) {
 		case LEFT:
-			try {
-				Integer relpos = ((mouseY+App.TILETRAY_BLOCK_DISTANCE)/App.TILETRAY_BLOCK_DISTANCE)-1;
-				String type = App.MAPTILE_AVALIABLE_TYPES[relpos];
-				if (Map.blocks.get(type) > 0) {
-					App.MAPTILE_SELECTED_TYPE = type;
-					App.DRAGGING              = true;
-					App.DRAGGING_FROMTRAY     = true;
-					App.DRAGGING_MAPTILE      = new MapTile(new Vector(-1, -1), type);
-					App.DRAGGING_PREVPOS      = null;
-					println("type: "+type);
+			if (mouseY < height-App.MAPTILE_SIZE.y*1.5) {
+				try {
+					Integer relpos = ((mouseY+App.TILETRAY_BLOCK_DISTANCE)/App.TILETRAY_BLOCK_DISTANCE)-1;
+					String type = App.MAPTILE_AVALIABLE_TYPES[relpos];
+					if (Map.blocks.get(type) > 0) {
+						App.MAPTILE_SELECTED_TYPE = type;
+						App.DRAGGING              = true;
+						App.DRAGGING_FROMTRAY     = true;
+						App.DRAGGING_MAPTILE      = new MapTile(new Vector(-1, -1), type);
+						App.DRAGGING_PREVPOS      = null;
+						println("type: "+type);
+					}
+				} catch (ArrayIndexOutOfBoundsException e) { println("Invalid TrayTile"); }
+			} else {
+				if(mouseX >= App.TILETRAY_OFFSET-App.MAPTILE_SIZE.x*1.5 && mouseY >= height-App.MAPTILE_SIZE.y*1.5
+				&& mouseX < (App.TILETRAY_OFFSET-App.MAPTILE_SIZE.x*1.5)+App.MAPTILE_SIZE.x*3 && mouseY < (height-App.MAPTILE_SIZE.y*1.5)+App.MAPTILE_SIZE.y) {
+					if (App.LEVEL_DISPLAY_BUTTON) {
+						Map.next_level();
+					}
 				}
-			} catch (ArrayIndexOutOfBoundsException e) { println("Invalid TrayTile"); }
+			}
 			break;
 	} }
 
@@ -199,58 +208,72 @@ void mouseReleased() {
 }
 
 void maptile_rotate(Vector mpos, Integer dir) {
-	if (dir == 1 || dir == -1) {
-		switch(dir) {
-			case -1:
-				if (Map.tiles[mpos.x][mpos.y].preset == false) {
-					switch(Map.tiles[mpos.x][mpos.y].type) {
-						case "splitter":
-							if (Map.tiles[mpos.x][mpos.y].rotation == 0) Map.tiles[mpos.x][mpos.y].rotation = 1;
-							else if (Map.tiles[mpos.x][mpos.y].rotation == 1) Map.tiles[mpos.x][mpos.y].rotation = 0;
-							break;
-						case "reflector":
-							Map.tiles[mpos.x][mpos.y].rotation -= 1;
-							if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
-							else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
-							break;
-						case "beam":
-							if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y == -1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector(-1,  0); }
-							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0, -1); }
-							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 1,  0); }
-							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x == -1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0,  1); }
-							break;
-						case "sensor":
-							Map.tiles[mpos.x][mpos.y].dstate = !Map.tiles[mpos.x][mpos.y].dstate;
-							break;
+	try {
+		if (mpos.x < 0 || mpos.x >= App.MAP_SIZE.x) { throw new MousePositionException("Mouse Out Of Bounds"); }
+		if (mpos.y < 0 || mpos.y >= App.MAP_SIZE.y) { throw new MousePositionException("Mouse Out Of Bounds"); }
+		if (dir == 1 || dir == -1) {
+			switch(dir) {
+				case -1:
+					if (Map.tiles[mpos.x][mpos.y].preset == false) {
+						switch(Map.tiles[mpos.x][mpos.y].type) {
+							case "splitter":
+								if (Map.tiles[mpos.x][mpos.y].rotation == 0) Map.tiles[mpos.x][mpos.y].rotation = 1;
+								else if (Map.tiles[mpos.x][mpos.y].rotation == 1) Map.tiles[mpos.x][mpos.y].rotation = 0;
+								break;
+							case "reflector":
+								Map.tiles[mpos.x][mpos.y].rotation -= 1;
+								if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
+								else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
+								break;
+							case "beam":
+								if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y == -1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector(-1,  0); }
+								else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0, -1); }
+								else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 1,  0); }
+								else if (Map.tiles[mpos.x][mpos.y].beam_dir.x == -1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0,  1); }
+								break;
+							case "sensor":
+								Map.tiles[mpos.x][mpos.y].dstate = !Map.tiles[mpos.x][mpos.y].dstate;
+								break;
+							case "and":
+								Map.tiles[mpos.x][mpos.y].rotation -= 1;
+								if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
+								else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
+								break;
+						}
 					}
-				}
-				break;
-			case 1:
-				if (Map.tiles[mpos.x][mpos.y].preset == false) {
-					switch(Map.tiles[mpos.x][mpos.y].type) {
-						case "splitter":
-							if (Map.tiles[mpos.x][mpos.y].rotation == 0) Map.tiles[mpos.x][mpos.y].rotation = 1;
-							else if (Map.tiles[mpos.x][mpos.y].rotation == 1) Map.tiles[mpos.x][mpos.y].rotation = 0;
-							break;
-						case "reflector":
-							Map.tiles[mpos.x][mpos.y].rotation += 1;
-							if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
-							else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
-							break;
-						case "beam":
-							if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y == -1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 1,  0); }
-							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0,  1); }
-							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector(-1,  0); }
-							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x == -1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0, -1); }
-							break;
-						case "sensor":
-							Map.tiles[mpos.x][mpos.y].dstate = !Map.tiles[mpos.x][mpos.y].dstate;
-							break;
+					break;
+				case 1:
+					if (Map.tiles[mpos.x][mpos.y].preset == false) {
+						switch(Map.tiles[mpos.x][mpos.y].type) {
+							case "splitter":
+								if (Map.tiles[mpos.x][mpos.y].rotation == 0) Map.tiles[mpos.x][mpos.y].rotation = 1;
+								else if (Map.tiles[mpos.x][mpos.y].rotation == 1) Map.tiles[mpos.x][mpos.y].rotation = 0;
+								break;
+							case "reflector":
+								Map.tiles[mpos.x][mpos.y].rotation += 1;
+								if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
+								else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
+								break;
+							case "beam":
+								if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y == -1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 1,  0); }
+								else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0,  1); }
+								else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector(-1,  0); }
+								else if (Map.tiles[mpos.x][mpos.y].beam_dir.x == -1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0, -1); }
+								break;
+							case "sensor":
+								Map.tiles[mpos.x][mpos.y].dstate = !Map.tiles[mpos.x][mpos.y].dstate;
+								break;
+							case "and":
+								Map.tiles[mpos.x][mpos.y].rotation += 1;
+								if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
+								else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
+								break;
+						}
 					}
-				}
-				break;
+					break;
+			}
 		}
-	}
+	} catch (MousePositionException e) { println("Mouse Position Invalid"); }
 }
 
 static class Mousef

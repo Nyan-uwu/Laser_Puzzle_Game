@@ -8,5 +8,6 @@ class Renderer {
 		Map.render_tiles(); // Draw Tiles
 		Map.render_tiletray(); // Draw Tray
 		if (App.DRAGGING == true) { Map.render_dragtile(); }
+		if (App.LEVEL_DISPLAY_BUTTON == true) { Map.render_levelbutton(); }
 	}
 } Renderer Renderer;
