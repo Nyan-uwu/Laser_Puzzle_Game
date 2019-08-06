@@ -10,8 +10,8 @@ __Mouse:__
     > Click : Deletes Tile  
     
 __Keyboard:__  
-  **Character Keys**  
-    > Rotates Tiles CCW / CW  
+  **Character Keys** 
+    > Q/E : Rotates Tiles CCW / CW  
 
   **Number Keys**  
     > 1 - Block  
