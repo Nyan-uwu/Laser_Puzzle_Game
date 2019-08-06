@@ -24,12 +24,14 @@ class Map
 
 	IntDict blocks = null;
 
+	String preset_loaded = "custom";
+
 	Map(Vector map_size) {
 		this.tiles = new MapTile[map_size.x][map_size.y]; // Create Tiles
 		this.beams = new ArrayList<Vector>();
 		this.sensors = new ArrayList<Vector>();
 
-		this.load_preset("preset__basic_map"); // Load Preset
+		this.load_preset("$level__1"); // Load Preset
 
 		for (String b : this.blocks.keyArray()) { println(b, blocks.get(b)); }
 	}
@@ -47,6 +49,10 @@ class Map
 						break;
 					case "beam":
 						output += "new MapTile(new Vector(" + mt.pos.x + "," + mt.pos.y + "), \"" + mt.type + "\", new Vector(" + mt.beam_dir.x + "," + mt.beam_dir.y + ")),";
+						break;
+					case "sensor":
+						output += "new MapTile(new Vector(" + mt.pos.x + "," + mt.pos.y + "), \"" + mt.type + "\", " + mt.dstate + "),";
+						break;
 					default:
 						output += "new MapTile(new Vector(" + mt.pos.x + "," + mt.pos.y + "), \"" + mt.type + "\"),";
 						break;
@@ -62,6 +68,7 @@ class Map
 
 	void load_preset(String preset) {
 		if (preset != null) {
+			if (preset.substring(0, 5) == "$level") {this.preset_loaded = preset; println("~~ Base Level Started ~~"); }
 			MapPreset mp = new MapPreset();
 			MapTile[] presetarr = null;
 			IntDict blocks = null;
@@ -71,6 +78,9 @@ class Map
 					presetarr = mp.preset__basic_map;
 					blocks    = mp.preset__basic_map_blocks;
 					break;
+				case "$level__1":
+					presetarr = base__level__1;
+					blocks    = base__level__1_blocks;
 			}
 			this.load_preset(presetarr, blocks);
 		}
@@ -84,6 +94,8 @@ class Map
 			this.blocks.set("block", 99);
 			this.blocks.set("reflector", 99);
 			this.blocks.set("splitter", 99);
+			this.blocks.set("beam", 99);
+			this.blocks.set("sensor", 99);
 		}
 
 		for (Integer i = 0; i < this.tiles.length; i++) { // Populate Map With Tiles
@@ -108,7 +120,6 @@ class Map
 			}
 
 			println("Preset Has Been Loaded");
-			println("--------------------");
 		} else {
 			println("Preset Does Not Exist.");
 		}
@@ -119,8 +130,20 @@ class Map
 		for (Vector b : this.beams)   { this.tiles[b.x][b.y].fire();      }
 
 		Boolean missed = false;
-		for (Vector s : this.sensors) { if (this.tiles[s.x][s.y].hit == false) { missed = true; } }
-		if (!missed) { println("Level Completed!"); }
+		for (Vector s : this.sensors) { if (this.tiles[s.x][s.y].hit == this.tiles[s.x][s.y].dstate) { missed = true; } }
+		if (!missed) {
+			println("Level Completed!");
+			switch(Map.preset_loaded) {
+				case "$level__1":
+					break;
+				case "$level__2":
+					break;
+				case "$level__3":
+					break;
+				case "$level__4":
+					break;
+			}
+		}
 	}
 
 	void render_background() {
@@ -172,11 +195,21 @@ class Map
 			text(type, offset, j-10);
 			switch(type) {
 				case "block":
-					fill(255); stroke(255); strokeWeight(1);
+					if (Map.blocks.get(type) > 0) {
+						fill(255); stroke(255); strokeWeight(1);
+					} else {
+						fill(255, 50); stroke(255, 50); strokeWeight(1);
+					}
+					text(Map.blocks.get(type), offset+App.MAPTILE_SIZE.x, j+App.MAPTILE_SIZE.y);
 					rect(offset-(App.MAPTILE_SIZE.x/2), j, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
 					break;
 				case "reflector":
-					fill(255); stroke(255); strokeWeight(1);
+					if (Map.blocks.get(type) > 0) {
+						fill(255); stroke(255); strokeWeight(1);
+					} else {
+						fill(255, 50); stroke(255, 50); strokeWeight(1);
+					}
+					text(Map.blocks.get(type), offset+App.MAPTILE_SIZE.x, j+App.MAPTILE_SIZE.y);
 					triangle(
 						offset-(App.MAPTILE_SIZE.x/2), j,
 						offset-(App.MAPTILE_SIZE.x/2)+App.MAPTILE_SIZE.x, j,
@@ -184,7 +217,13 @@ class Map
 					);
 					break;
 				case "splitter":
-					fill(255); stroke(255); strokeWeight(3);
+					if (Map.blocks.get(type) > 0) {
+						fill(255); stroke(255); strokeWeight(3);
+					} else {
+						fill(255, 50); stroke(255, 50); strokeWeight(3);
+					}
+
+					text(Map.blocks.get(type), offset+App.MAPTILE_SIZE.x, j+App.MAPTILE_SIZE.y);
 					line(offset-(App.MAPTILE_SIZE.x/2), j, offset-(App.MAPTILE_SIZE.x/2)+App.MAPTILE_SIZE.x/3, j);
 					line(offset-(App.MAPTILE_SIZE.x/2), j, offset-(App.MAPTILE_SIZE.x/2), j+App.MAPTILE_SIZE.y/3);
 
@@ -194,11 +233,21 @@ class Map
 					line(offset-(App.MAPTILE_SIZE.x/2), j, offset-(App.MAPTILE_SIZE.x/2)+App.MAPTILE_SIZE.x, j+App.MAPTILE_SIZE.y);
 					break;
 				case "beam":
-					fill(255, 25, 25); stroke(255); strokeWeight(1);
+					if (Map.blocks.get(type) > 0) {
+						fill(255, 25, 25); stroke(255); strokeWeight(1);
+					} else {
+						fill(255, 25, 25, 50); stroke(255, 50); strokeWeight(1);
+					}
+					text(Map.blocks.get(type), offset+App.MAPTILE_SIZE.x, j+App.MAPTILE_SIZE.y);
 					rect(offset-(App.MAPTILE_SIZE.x/2), j, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
 					break;
 				case "sensor":
-					fill(25, 25, 255); stroke(255); strokeWeight(1);
+					if (Map.blocks.get(type) > 0) {
+						fill(25, 25, 255); stroke(255); strokeWeight(1);
+					} else {
+						fill(25, 25, 255, 50); stroke(255, 50); strokeWeight(1);
+					}
+					text(Map.blocks.get(type), offset+App.MAPTILE_SIZE.x, j+App.MAPTILE_SIZE.y);
 					rect(offset-(App.MAPTILE_SIZE.x/2), j, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
 					break;
 			}
@@ -225,6 +274,7 @@ class MapTile
 
 	// Sensor
 	Boolean hit = false;
+	Boolean dstate = false;
 
 	MapTile(Vector pos, String type) {
 		this.pos  = pos;
@@ -238,6 +288,12 @@ class MapTile
 		this.type = type;
 
 		if (this.type == "beam") { this.beam_body = new ArrayList<Vector>(); this.beam_dir = new Vector(1, 0); }
+	}
+	MapTile(Vector pos, String type, Boolean dstate) {
+		this.pos  = pos;
+		this.type = type;
+
+		if (this.type == "sensor") { this.dstate = dstate; }
 	}
 	MapTile(Vector pos, String type, Vector dir) {
 		this.pos  = pos;
@@ -257,7 +313,7 @@ class MapTile
 				rect(this.pos.x*App.MAPTILE_SIZE.x, this.pos.y*App.MAPTILE_SIZE.y, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
 				break;
 			case "sensor":
-				if (this.hit == true) { fill(0, 255, 0); } else { fill(0, 0, 255); }stroke(255); strokeWeight(1);
+				if (this.hit == !this.dstate) { fill(0, 255, 0); } else { fill(0, 0, 255); }stroke(255); strokeWeight(1);
 				rect(this.pos.x*App.MAPTILE_SIZE.x, this.pos.y*App.MAPTILE_SIZE.y, App.MAPTILE_SIZE.x, App.MAPTILE_SIZE.y);
 				break;
 			case "splitter":
@@ -456,7 +512,6 @@ class MapTile
 class MapPreset {
 	// Default Presets
 	MapTile[] preset__basic_map = {
-		new MapTile(new Vector(1, 1), "beam"), new MapTile(new Vector(13, 13), "sensor")
 	}; IntDict preset__basic_map_blocks;
 
 	MapPreset() { // Create Block Dicts
@@ -466,8 +521,10 @@ class MapPreset {
 }
 
 // Base Levels
-
-
+MapTile[] base__level__1 = {new MapTile(new Vector(0,5), "reflector", 2),new MapTile(new Vector(0,6), "block"),new MapTile(new Vector(0,7), "block"),new MapTile(new Vector(0,8), "block"),new MapTile(new Vector(0,9), "reflector", 1),new MapTile(new Vector(1,5), "block"),new MapTile(new Vector(1,6), "beam", new Vector(1,0)),new MapTile(new Vector(1,7), "block"),new MapTile(new Vector(1,8), "block"),new MapTile(new Vector(1,9), "block"),new MapTile(new Vector(2,5), "block"),new MapTile(new Vector(2,9), "block"),new MapTile(new Vector(3,5), "block"),new MapTile(new Vector(3,9), "block"),new MapTile(new Vector(4,5), "block"),new MapTile(new Vector(4,9), "block"),new MapTile(new Vector(5,5), "block"),new MapTile(new Vector(5,9), "block"),new MapTile(new Vector(6,5), "block"),new MapTile(new Vector(6,9), "block"),new MapTile(new Vector(7,5), "block"),new MapTile(new Vector(7,9), "block"),new MapTile(new Vector(8,5), "block"),new MapTile(new Vector(8,9), "block"),new MapTile(new Vector(9,5), "block"),new MapTile(new Vector(9,9), "block"),new MapTile(new Vector(10,5), "block"),new MapTile(new Vector(10,9), "block"),new MapTile(new Vector(11,5), "block"),new MapTile(new Vector(11,9), "block"),new MapTile(new Vector(12,5), "block"),new MapTile(new Vector(12,9), "block"),new MapTile(new Vector(13,5), "block"),new MapTile(new Vector(13,6), "block"),new MapTile(new Vector(13,7), "block"),new MapTile(new Vector(13,8), "sensor", false),new MapTile(new Vector(13,9), "block"),new MapTile(new Vector(14,5), "reflector", 3),new MapTile(new Vector(14,6), "block"),new MapTile(new Vector(14,7), "block"),new MapTile(new Vector(14,8), "block"),new MapTile(new Vector(14,9), "reflector", 0)};
+String[]  base__level__1_blocks_keys   = {"block","reflector","splitter", "beam", "sensor"};
+int[]     base__level__1_blocks_values = {0      , 2         , 0        , 0    , 0      };
+IntDict   base__level__1_blocks = new IntDict(base__level__1_blocks_keys, base__level__1_blocks_values);
 // Custom Presets - Paset Preset Here and in Map.load_preset(); enter the name of your preset E.G. Map.load_preset(custom_map__test);
 MapTile[] custom_map__test = {new MapTile(new Vector(0,8), "block"),new MapTile(new Vector(0,9), "block"),new MapTile(new Vector(0,10), "block"),new MapTile(new Vector(1,1), "beam", new Vector(1,0)),new MapTile(new Vector(1,1), "beam"),new MapTile(new Vector(1,8), "block"),new MapTile(new Vector(1,9), "block"),new MapTile(new Vector(1,10), "block"),new MapTile(new Vector(2,8), "block"),new MapTile(new Vector(2,9), "block"),new MapTile(new Vector(2,10), "block"),new MapTile(new Vector(3,3), "reflector", 2),new MapTile(new Vector(3,4), "reflector", 1),new MapTile(new Vector(3,8), "reflector", 3),new MapTile(new Vector(3,9), "sensor"),new MapTile(new Vector(3,10), "reflector", 0),new MapTile(new Vector(4,3), "reflector", 3),new MapTile(new Vector(4,4), "reflector", 0),new MapTile(new Vector(6,13), "reflector", 2),new MapTile(new Vector(6,14), "block"),new MapTile(new Vector(7,13), "reflector", 3),new MapTile(new Vector(7,14), "block"),new MapTile(new Vector(8,1), "splitter", 0),new MapTile(new Vector(12,0), "reflector", 1),new MapTile(new Vector(13,0), "block"),new MapTile(new Vector(13,1), "reflector", 1),new MapTile(new Vector(13,9), "reflector", 2),new MapTile(new Vector(13,10), "reflector", 1),new MapTile(new Vector(13,13), "sensor"),new MapTile(new Vector(14,0), "block"),new MapTile(new Vector(14,1), "block"),new MapTile(new Vector(14,2), "reflector", 1),new MapTile(new Vector(14,9), "block"),new MapTile(new Vector(14,10), "block")};
 String[]  custom_map__test_blocks_keys   = {"block","reflector","splitter", "beam", "sensor"};

@@ -111,12 +111,14 @@ void mousePressed() {
 			try {
 				Integer relpos = ((mouseY+App.TILETRAY_BLOCK_DISTANCE)/App.TILETRAY_BLOCK_DISTANCE)-1;
 				String type = App.MAPTILE_AVALIABLE_TYPES[relpos];
-				App.MAPTILE_SELECTED_TYPE = type;
-				App.DRAGGING              = true;
-				App.DRAGGING_FROMTRAY     = true;
-				App.DRAGGING_MAPTILE      = new MapTile(new Vector(-1, -1), type);
-				App.DRAGGING_PREVPOS      = null;
-				println("type: "+type);
+				if (Map.blocks.get(type) > 0) {
+					App.MAPTILE_SELECTED_TYPE = type;
+					App.DRAGGING              = true;
+					App.DRAGGING_FROMTRAY     = true;
+					App.DRAGGING_MAPTILE      = new MapTile(new Vector(-1, -1), type);
+					App.DRAGGING_PREVPOS      = null;
+					println("type: "+type);
+				}
 			} catch (ArrayIndexOutOfBoundsException e) { println("Invalid TrayTile"); }
 			break;
 	} }
@@ -216,6 +218,10 @@ void maptile_rotate(Vector mpos, Integer dir) {
 							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0, -1); }
 							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 1,  0); }
 							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x == -1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0,  1); }
+							break;
+						case "sensor":
+							Map.tiles[mpos.x][mpos.y].dstate = !Map.tiles[mpos.x][mpos.y].dstate;
+							break;
 					}
 				}
 				break;
@@ -236,6 +242,10 @@ void maptile_rotate(Vector mpos, Integer dir) {
 							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0,  1); }
 							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x ==  0 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  1) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector(-1,  0); }
 							else if (Map.tiles[mpos.x][mpos.y].beam_dir.x == -1 && Map.tiles[mpos.x][mpos.y].beam_dir.y ==  0) { Map.tiles[mpos.x][mpos.y].beam_dir = new Vector( 0, -1); }
+							break;
+						case "sensor":
+							Map.tiles[mpos.x][mpos.y].dstate = !Map.tiles[mpos.x][mpos.y].dstate;
+							break;
 					}
 				}
 				break;
