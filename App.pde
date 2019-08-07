@@ -7,8 +7,8 @@ static class App {
 
 	static Vector    MAPTILE_SIZE;
 	static String    MAPTILE_SELECTED_TYPE   = "block";
-	static String[]  MAPTILE_AVALIABLE_TYPES = {"block", "reflector", "splitter", "and", "beam", "sensor"};
-	static Integer[] MAPTILE_RELATED_BUTTON  = {1      , 2          , 3         , 4           , 9     , 0       };
+	static String[]  MAPTILE_AVALIABLE_TYPES = {"block", "reflector", "splitter", "and", "or", "xor", "beam", "sensor"};
+	static Integer[] MAPTILE_RELATED_BUTTON  = {1      , 2          , 3         , 4    , 5   , 6    , 9     , 0       };
 
 	static Integer TILETRAY_OFFSET;
 	static Integer TILETRAY_BLOCK_DISTANCE;

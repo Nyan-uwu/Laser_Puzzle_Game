@@ -106,6 +106,9 @@ void mousePressed() {
 					break;
 			} }
 			break;
+		case CENTER:
+			println(Map.tiles[mpos.x][mpos.y].type + ", " + Map.tiles[mpos.x][mpos.y].laserCount);
+			break;
 	} } else if (mouseX >= App.TILETRAY_OFFSET-App.MAPTILE_SIZE.x && mouseX < width) { switch(mouseButton) {
 		case LEFT:
 			if (mouseY < height-App.MAPTILE_SIZE.y*1.5) {
@@ -207,6 +210,10 @@ void mouseReleased() {
 	}
 }
 
+void debug_click() { // Middle Click
+
+}
+
 void maptile_rotate(Vector mpos, Integer dir) {
 	try {
 		if (mpos.x < 0 || mpos.x >= App.MAP_SIZE.x) { throw new MousePositionException("Mouse Out Of Bounds"); }
@@ -239,6 +246,16 @@ void maptile_rotate(Vector mpos, Integer dir) {
 								if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
 								else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
 								break;
+							case "or":
+								Map.tiles[mpos.x][mpos.y].rotation -= 1;
+								if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
+								else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
+								break;
+							case "xor":
+								Map.tiles[mpos.x][mpos.y].rotation -= 1;
+								if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
+								else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
+								break;
 						}
 					}
 					break;
@@ -264,6 +281,16 @@ void maptile_rotate(Vector mpos, Integer dir) {
 								Map.tiles[mpos.x][mpos.y].dstate = !Map.tiles[mpos.x][mpos.y].dstate;
 								break;
 							case "and":
+								Map.tiles[mpos.x][mpos.y].rotation += 1;
+								if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
+								else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
+								break;
+							case "or":
+								Map.tiles[mpos.x][mpos.y].rotation += 1;
+								if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
+								else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
+								break;
+							case "xor":
 								Map.tiles[mpos.x][mpos.y].rotation += 1;
 								if      (Map.tiles[mpos.x][mpos.y].rotation < 0) { Map.tiles[mpos.x][mpos.y].rotation = 3; }
 								else if (Map.tiles[mpos.x][mpos.y].rotation > 3) { Map.tiles[mpos.x][mpos.y].rotation = 0; }
